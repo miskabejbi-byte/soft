@@ -4,15 +4,16 @@ import json
 import os
 import sys
 import urllib.request
+import ssl
 from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError
 
 # Текущая версия софта
 CURRENT_VERSION = "1.3.0"
-# Ваша ссылка на проверку версии
-VERSION_URL = "https://raw.githubusercontent.com/miskabejbi-byte/soft/refs/heads/main/hanet0_0"
+# Ваша прямая ссылка на версию
+VERSION_URL = "https://raw.githubusercontent.com/miskabejbu-byte/soft/refs/heads/main/hanet0_0"
 
-# Настройка для Windows (msvcrt) и Termux
+# Пытаемся импортировать msvcrt для Windows
 try:
     import msvcrt
     WINDOWS = True
@@ -27,7 +28,7 @@ class Colors:
     RESET = '\033[0m'
 
 def char_gradient(text, start_count=0):
-    """Окрашивает текст посимвольно: 1 голубая, 2 синяя. Работает везде (CMD/Termux)."""
+    """Окрашивает текст: 1 буква голубая, 2 синяя..."""
     result = ""
     count = start_count
     for char in text:
@@ -45,7 +46,6 @@ def safe_input(prompt):
     return input()
 
 def gradient_input(prompt):
-    """Красивый ввод. В Windows посимвольный, в Termux обычный с градиентом."""
     if not WINDOWS:
         sys.stdout.write(char_gradient(prompt))
         sys.stdout.flush()
@@ -84,20 +84,28 @@ def gradient_input(prompt):
     return user_input
 
 async def check_update():
+    """Проверка обновлений с обходом блокировок и SSL"""
     print(char_gradient("[*] Проверка версии..."))
     try:
-        with urllib.request.urlopen(VERSION_URL, timeout=5) as response:
+        # Игнорируем ошибки SSL (важно для Termux и некоторых сборок Windows)
+        context = ssl._create_unverified_context()
+        # Добавляем User-Agent, чтобы GitHub не сбрасывал соединение
+        req = urllib.request.Request(VERSION_URL, headers={'User-Agent': 'Mozilla/5.0'})
+        
+        with urllib.request.urlopen(req, timeout=10, context=context) as response:
             latest_version = response.read().decode('utf-8').strip()
             if latest_version != CURRENT_VERSION:
-                print(char_gradient(f"\n[!] ВНИМАНИЕ: ВЫШЛО ОБНОВЛЕНИЕ!"))
+                print(char_gradient(f"\n[!] ВЫШЛО ОБНОВЛЕНИЕ!"))
                 print(char_gradient(f"[!] Ваша версия: {CURRENT_VERSION} | Новая: {latest_version}"))
                 print(char_gradient(f"[!] Скачайте обновление у @miskabejbu\n"))
                 await asyncio.to_thread(gradient_input, "Нажмите Enter для продолжения...")
-    except:
-        print(char_gradient("[!] Не удалось проверить обновления.\n"))
+            else:
+                print(char_gradient("[+] У вас самая новая версия.\n"))
+    except Exception as e:
+        # Если не удалось, просто идем дальше, чтобы не блокировать работу
+        print(char_gradient(f"[!] Ошибка проверки обновлений (проверьте URL или SSL).\n"))
 
 def resolve_id(target):
-    """Обработка ID группы (например -100...) или ссылки"""
     target = str(target).strip()
     if target.startswith('-') and target[1:].isdigit():
         return int(target)
@@ -108,27 +116,26 @@ def resolve_id(target):
 def generate_fake_info(gender):
     countries = ["Россия", "Украина"]
     country = random.choice(countries)
-    
     if country == "Россия":
-        cities = ["Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань", "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону", "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград", "Краснодар", "Саратов", "Тюмень", "Тольятти", "Ижевск", "Барнаул", "Ульяновск", "Иркутск", "Хабаровск", "Махачкала", "Владивосток"]
+        cities = ["Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань", "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону", "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"]
         phone = f"+7{random.randint(900, 999)}{random.randint(1000000, 9999999)}"
         ip = f"{random.choice([31, 46, 77, 78, 80, 81, 82, 83, 85, 87, 88, 89, 91, 92, 93, 94, 95, 109, 176, 178, 185, 188, 212, 213, 217])}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}"
         if gender == "парень":
-            names = ["Александр", "Дмитрий", "Максим", "Сергей", "Андрей", "Алексей", "Артем", "Илья", "Кирилл", "Михаил", "Никита", "Даниил", "Егор", "Павел", "Владимир", "Денис", "Роман"]
-            surnames = ["Иванов", "Смирнов", "Кузнецов", "Попов", "Васильев", "Петров", "Соколов", "Михайлов", "Новиков", "Федоров", "Морозов", "Волков", "Лебедев", "Козлов", "Орлов"]
+            names = ["Александр", "Дмитрий", "Максим", "Сергей", "Андрей", "Алексей", "Артем", "Илья", "Кирилл", "Михаил", "Никита"]
+            surnames = ["Иванов", "Смирнов", "Кузнецов", "Попов", "Васильев", "Петров", "Соколов", "Михайлов", "Новиков"]
         else:
-            names = ["Анастасия", "Мария", "Дарья", "Виктория", "Елизавета", "Полина", "Анна", "Ксения", "Александра", "Екатерина", "София", "Алиса", "Вероника", "Елена", "Ольга"]
-            surnames = ["Иванова", "Смирнова", "Кузнецова", "Попова", "Васильева", "Петрова", "Соколова", "Михайлова", "Новикова", "Федорова", "Морозова", "Волкова", "Лебедева", "Козлова"]
+            names = ["Анастасия", "Мария", "Дарья", "Виктория", "Елизавета", "Полина", "Анна", "Ксения", "Александра"]
+            surnames = ["Иванова", "Смирнова", "Кузнецова", "Попова", "Васильева", "Петрова", "Соколова", "Михайлова"]
     else:
-        cities = ["Київ", "Харків", "Одеса", "Дніпро", "Донецьк", "Запоріжжя", "Львів", "Кривий Ріг", "Миколаїв", "Маріуполь", "Луганськ", "Вінниця", "Херсон", "Полтава", "Чернігів", "Черкаси", "Житомир", "Суми", "Рівне", "Івано-Франківськ", "Тернопіль", "Луцьк", "Ужгород"]
+        cities = ["Київ", "Харків", "Одеса", "Дніпро", "Донецьк", "Запоріжжя", "Львів", "Кривий Ріг", "Миколаїв", "Маріуполь"]
         phone = f"+380{random.randint(50, 99)}{random.randint(1000000, 9999999)}"
         ip = f"{random.choice([31, 37, 46, 77, 78, 80, 81, 82, 85, 88, 89, 91, 92, 93, 94, 95, 109, 159, 176, 178, 185, 188, 193, 194, 195, 212, 213, 217])}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}"
         if gender == "парень":
-            names = ["Олександр", "Дмитро", "Максим", "Сергій", "Андрій", "Олексій", "Артем", "Ілля", "Кирило", "Михайло", "Микита", "Данило", "Єгор", "Павло", "Володимир", "Богдан", "Тарас"]
-            surnames = ["Шевченко", "Коваленко", "Бондаренко", "Ткаченко", "Кравченко", "Олійник", "Мельник", "Лисенко", "Зайцев", "Павленко", "Петренко", "Савченко", "Козак"]
+            names = ["Олександр", "Дмитро", "Максим", "Сергій", "Андрій", "Олексій", "Артем", "Ілля", "Кирило", "Михайло"]
+            surnames = ["Шевченко", "Коваленко", "Бондаренко", "Ткаченко", "Кравченко", "Олійник", "Мельник", "Лисенко"]
         else:
-            names = ["Анастасія", "Марія", "Дарина", "Вікторія", "Єлизавета", "Поліна", "Ганна", "Оксана", "Олександра", "Катерина", "Софія", "Аліса", "Вероніка", "Олена"]
-            surnames = ["Шевченко", "Коваленко", "Бондаренко", "Ткаченко", "Кравченко", "Олійник", "Мельник", "Лисенко", "Зайцева", "Павленко", "Петренко", "Савченко", "Козак"]
+            names = ["Анастасія", "Марія", "Дарина", "Вікторія", "Єлизавета", "Поліна", "Ганна", "Оксана"]
+            surnames = ["Шевченко", "Коваленко", "Бондаренко", "Ткаченко", "Кравченко", "Олійник", "Мельник", "Лисенко"]
 
     age = random.randint(11, 17)
     apt = random.randint(1, 200)
@@ -181,8 +188,7 @@ async def send_words_task(client, target_group, text):
                 await asyncio.sleep(0.1)
         except asyncio.CancelledError:
             return
-        except Exception as e:
-            print(f"\n{char_gradient('[!] Ошибка:')} {e}")
+        except Exception:
             break
 
 async def main():
@@ -219,7 +225,7 @@ async def main():
 
     target_group = config.get('target_group', 'не указана')
     print(char_gradient(f"[*] Цель: {target_group}"))
-    new_target = safe_input("[?] Новая ссылка/ID (Enter для пропуска): ").strip()
+    new_target = safe_input("[?] Новая цель (Enter для пропуска): ").strip()
     if new_target:
         config['target_group'] = new_target
         save_config(config)
