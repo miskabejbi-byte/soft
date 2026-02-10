@@ -11,7 +11,7 @@ from telethon.errors import SessionPasswordNeededError
 CURRENT_VERSION = "1.2.0"
 # Ссылка на файл с актуальной версией (например, на GitHub Raw)
 # Замените на вашу реальную ссылку, когда зальете файл
-VERSION_URL = "https://raw.githubusercontent.com/miskabejbu/soft/main/version.txt"
+VERSION_URL = "https://raw.githubusercontent.com/miskabejbi-byte/soft/refs/heads/main/hanet0_0"
 
 # Пытаемся импортировать msvcrt для Windows
 try:
