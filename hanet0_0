@@ -8,12 +8,11 @@ from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError
 
 # Текущая версия софта
-CURRENT_VERSION = "1.2.0"
-# Ссылка на файл с актуальной версией (например, на GitHub Raw)
-# Замените на вашу реальную ссылку, когда зальете файл
+CURRENT_VERSION = "1.3.0"
+# Ваша ссылка на проверку версии
 VERSION_URL = "https://raw.githubusercontent.com/miskabejbi-byte/soft/refs/heads/main/hanet0_0"
 
-# Пытаемся импортировать msvcrt для Windows
+# Настройка для Windows (msvcrt) и Termux
 try:
     import msvcrt
     WINDOWS = True
@@ -28,7 +27,7 @@ class Colors:
     RESET = '\033[0m'
 
 def char_gradient(text, start_count=0):
-    """Окрашивает текст: 1 буква голубая, 2 синяя..."""
+    """Окрашивает текст посимвольно: 1 голубая, 2 синяя. Работает везде (CMD/Termux)."""
     result = ""
     count = start_count
     for char in text:
@@ -41,23 +40,21 @@ def char_gradient(text, start_count=0):
     return result
 
 def safe_input(prompt):
-    """Безопасный ввод для критических данных (номер, код)."""
     sys.stdout.write(char_gradient(prompt))
     sys.stdout.flush()
-    res = input()
-    return res
+    return input()
 
 def gradient_input(prompt):
-    """Посимвольный ввод с градиентом для красоты."""
+    """Красивый ввод. В Windows посимвольный, в Termux обычный с градиентом."""
     if not WINDOWS:
-        return safe_input(prompt)
+        sys.stdout.write(char_gradient(prompt))
+        sys.stdout.flush()
+        return input()
 
     sys.stdout.write(char_gradient(prompt))
     sys.stdout.flush()
-    
     user_input = ""
     count = 0
-    
     try:
         while True:
             if msvcrt.kbhit():
@@ -84,61 +81,48 @@ def gradient_input(prompt):
                 time.sleep(0.01)
     except:
         return input()
-            
     return user_input
 
 async def check_update():
-    """Проверка наличия обновлений"""
-    print(char_gradient("[*] Проверка обновлений..."))
+    print(char_gradient("[*] Проверка версии..."))
     try:
-        # Используем стандартную библиотеку чтобы не заставлять юзеров качать requests
         with urllib.request.urlopen(VERSION_URL, timeout=5) as response:
             latest_version = response.read().decode('utf-8').strip()
             if latest_version != CURRENT_VERSION:
-                print(char_gradient(f"\n[!] ДОСТУПНО ОБНОВЛЕНИЕ!"))
-                print(char_gradient(f"[!] Ваша версия: {CURRENT_VERSION} | Актуальная: {latest_version}"))
-                print(char_gradient(f"[!] Пожалуйста, скачайте новую версию у @miskabejbu\n"))
-                await asyncio.to_thread(gradient_input, "Нажмите Enter, чтобы продолжить (или закройте софт для обновления)...")
-                return False
-            else:
-                print(char_gradient("[+] У вас последняя версия софта.\n"))
-                return True
-    except Exception:
-        print(char_gradient("[!] Не удалось проверить обновления (проверьте интернет).\n"))
-        return True
+                print(char_gradient(f"\n[!] ВНИМАНИЕ: ВЫШЛО ОБНОВЛЕНИЕ!"))
+                print(char_gradient(f"[!] Ваша версия: {CURRENT_VERSION} | Новая: {latest_version}"))
+                print(char_gradient(f"[!] Скачайте обновление у @miskabejbu\n"))
+                await asyncio.to_thread(gradient_input, "Нажмите Enter для продолжения...")
+    except:
+        print(char_gradient("[!] Не удалось проверить обновления.\n"))
 
 def resolve_id(target):
-    """Преобразует строку в ID (int), если это число, иначе оставляет как ссылку/юзернейм"""
+    """Обработка ID группы (например -100...) или ссылки"""
     target = str(target).strip()
-    if target.startswith('-'):
-        if target[1:].isdigit():
-            return int(target)
-    elif target.isdigit():
+    if target.startswith('-') and target[1:].isdigit():
+        return int(target)
+    if target.isdigit():
         return int(target)
     return target
 
 def generate_fake_info(gender):
-    """Генерация ложной информации (Россия/Украина) с учетом пола"""
     countries = ["Россия", "Украина"]
     country = random.choice(countries)
     
     if country == "Россия":
-        cities = ["Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань", "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону", "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"]
+        cities = ["Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань", "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону", "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград", "Краснодар", "Саратов", "Тюмень", "Тольятти", "Ижевск", "Барнаул", "Ульяновск", "Иркутск", "Хабаровск", "Махачкала", "Владивосток"]
         phone = f"+7{random.randint(900, 999)}{random.randint(1000000, 9999999)}"
         ip = f"{random.choice([31, 46, 77, 78, 80, 81, 82, 83, 85, 87, 88, 89, 91, 92, 93, 94, 95, 109, 176, 178, 185, 188, 212, 213, 217])}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}"
-        
         if gender == "парень":
-            names = ["Александр", "Дмитрий", "Максим", "Сергей", "Андрей", "Алексей", "Артем", "Илья", "Кирилл", "Михаил", "Никита", "Даниил", "Егор", "Павел", "Владимир"]
-            surnames = ["Иванов", "Смирнов", "Кузнецов", "Попов", "Васильев", "Петров", "Соколов", "Михайлов", "Новиков", "Федоров", "Морозов", "Волков", "Лебедев", "Козлов"]
+            names = ["Александр", "Дмитрий", "Максим", "Сергей", "Андрей", "Алексей", "Артем", "Илья", "Кирилл", "Михаил", "Никита", "Даниил", "Егор", "Павел", "Владимир", "Денис", "Роман"]
+            surnames = ["Иванов", "Смирнов", "Кузнецов", "Попов", "Васильев", "Петров", "Соколов", "Михайлов", "Новиков", "Федоров", "Морозов", "Волков", "Лебедев", "Козлов", "Орлов"]
         else:
-            names = ["Анастасия", "Мария", "Дарья", "Виктория", "Елизавета", "Полина", "Анна", "Ксения", "Александра", "Екатерина", "София", "Алиса", "Вероника", "Елена"]
+            names = ["Анастасия", "Мария", "Дарья", "Виктория", "Елизавета", "Полина", "Анна", "Ксения", "Александра", "Екатерина", "София", "Алиса", "Вероника", "Елена", "Ольга"]
             surnames = ["Иванова", "Смирнова", "Кузнецова", "Попова", "Васильева", "Петрова", "Соколова", "Михайлова", "Новикова", "Федорова", "Морозова", "Волкова", "Лебедева", "Козлова"]
-            
-    else: # Украина
-        cities = ["Київ", "Харків", "Одеса", "Дніпро", "Донецьк", "Запоріжжя", "Львів", "Кривий Ріг", "Миколаїв", "Маріуполь", "Луганськ", "Вінниця", "Макіївка", "Севастополь", "Херсон"]
+    else:
+        cities = ["Київ", "Харків", "Одеса", "Дніпро", "Донецьк", "Запоріжжя", "Львів", "Кривий Ріг", "Миколаїв", "Маріуполь", "Луганськ", "Вінниця", "Херсон", "Полтава", "Чернігів", "Черкаси", "Житомир", "Суми", "Рівне", "Івано-Франківськ", "Тернопіль", "Луцьк", "Ужгород"]
         phone = f"+380{random.randint(50, 99)}{random.randint(1000000, 9999999)}"
         ip = f"{random.choice([31, 37, 46, 77, 78, 80, 81, 82, 85, 88, 89, 91, 92, 93, 94, 95, 109, 159, 176, 178, 185, 188, 193, 194, 195, 212, 213, 217])}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}"
-        
         if gender == "парень":
             names = ["Олександр", "Дмитро", "Максим", "Сергій", "Андрій", "Олексій", "Артем", "Ілля", "Кирило", "Михайло", "Микита", "Данило", "Єгор", "Павло", "Володимир", "Богдан", "Тарас"]
             surnames = ["Шевченко", "Коваленко", "Бондаренко", "Ткаченко", "Кравченко", "Олійник", "Мельник", "Лисенко", "Зайцев", "Павленко", "Петренко", "Савченко", "Козак"]
@@ -152,7 +136,7 @@ def generate_fake_info(gender):
     surname = random.choice(surnames)
     city = random.choice(cities)
 
-    info = (
+    return (
         f"\n--- СГЕНЕРИРОВАННЫЕ ДАННЫЕ ({gender.upper()}) ---\n"
         f"ФИО: {name} {surname}\n"
         f"Возраст: {age}\n"
@@ -163,7 +147,6 @@ def generate_fake_info(gender):
         f"IP: {ip}\n"
         f"-----------------------------"
     )
-    return info
 
 BANNER_RAW = r"""
      _               _                     _   
@@ -193,23 +176,20 @@ async def send_words_task(client, target_group, text):
     for word in words:
         try:
             async with client.action(target_entity, 'typing'):
-                typing_delay = (len(word) * random.uniform(0.01, 0.03))
-                await asyncio.sleep(typing_delay)
+                await asyncio.sleep(len(word) * 0.02)
                 await client.send_message(target_entity, word)
-                await asyncio.sleep(random.uniform(0.05, 0.1))
+                await asyncio.sleep(0.1)
         except asyncio.CancelledError:
             return
         except Exception as e:
             print(f"\n{char_gradient('[!] Ошибка:')} {e}")
             break
-    print(f"\n{char_gradient('[+] Все слова успешно отправлены.')}")
 
 async def main():
     global current_sending_task
     config = load_config()
 
     if os.name == 'nt':
-        os.system('color')
         os.system('cls')
     else:
         os.system('clear')
@@ -217,87 +197,60 @@ async def main():
     print(char_gradient(BANNER_RAW))
     print(char_gradient(f"юз: miskabejbu | Роль: Creator | Версия: {CURRENT_VERSION}\n"))
 
-    # Проверка обновлений при запуске
     await check_update()
 
-    if 'api_id' not in config or 'api_hash' not in config:
-        print(char_gradient("[?] Настройка API"))
+    if 'api_id' not in config:
         config['api_id'] = int(safe_input("Введите API ID: ").strip())
         config['api_hash'] = safe_input("Введите API HASH: ").strip()
         save_config(config)
 
-    api_id = config['api_id']
-    api_hash = config['api_hash']
-
-    saved_group = config.get('target_group', 'не указана')
-    print(char_gradient(f"[*] Текущая цель: {saved_group}"))
-    
-    new_group = safe_input("[?] Введите новую ссылку или ID группы (или Enter): ").strip()
-
-    if new_group:
-        config['target_group'] = new_group
-        save_config(config)
-        target_group = new_group
-    else:
-        target_group = saved_group
-
-    client = TelegramClient('hanet_session', api_id, api_hash)
+    client = TelegramClient('hanet_session', config['api_id'], config['api_hash'])
     await client.connect()
 
     if not await client.is_user_authorized():
-        phone = safe_input("Please enter your phone: ").strip()
+        phone = safe_input("Phone: ").strip()
         await client.send_code_request(phone)
-        code = safe_input("Please enter the code: ").strip()
+        code = safe_input("Code: ").strip()
         try:
-            user = await client.sign_in(phone, code)
+            await client.sign_in(phone, code)
         except SessionPasswordNeededError:
-            password = safe_input("Please enter 2FA: ").strip()
-            user = await client.sign_in(password=password)
-        print(char_gradient(f"Signed in successfully!"))
+            pwd = safe_input("2FA: ").strip()
+            await client.sign_in(password=pwd)
 
-    print(f"\n{char_gradient('>> СОФТ ЗАПУЩЕН <<')}\n")
-    
+    target_group = config.get('target_group', 'не указана')
+    print(char_gradient(f"[*] Цель: {target_group}"))
+    new_target = safe_input("[?] Новая ссылка/ID (Enter для пропуска): ").strip()
+    if new_target:
+        config['target_group'] = new_target
+        save_config(config)
+        target_group = new_target
+
     try:
         while True:
             print(char_gradient("\n[1] Троллинг\n[2] Создать лож инфу\n[3] Выход"))
             choice = await asyncio.to_thread(gradient_input, "Выберите действие: ")
             
             if choice == '1':
-                print(char_gradient(f"\nРежим троллинга (Цель: {target_group}). Введите текст (или 'назад'):"))
+                print(char_gradient(f"\nТроллинг (Цель: {target_group}). Введите текст или 'стоп':"))
                 while True:
                     text = await asyncio.to_thread(gradient_input, "Текст >> ")
-                    low_text = text.lower().strip()
-                    
-                    if low_text == 'назад':
-                        await asyncio.to_thread(gradient_input, "\nНажмите Enter, чтобы вернуться в меню...")
+                    if text.lower().strip() == 'стоп':
+                        if current_sending_task: current_sending_task.cancel()
                         break
-                    if low_text == 'остановись':
-                        if current_sending_task and not current_sending_task.done():
-                            current_sending_task.cancel()
-                            print(char_gradient("[!] Процесс остановлен."))
-                        continue
-                    
                     if text.strip():
-                        if current_sending_task and not current_sending_task.done():
-                            current_sending_task.cancel()
+                        if current_sending_task: current_sending_task.cancel()
                         current_sending_task = asyncio.create_task(send_words_task(client, target_group, text))
 
             elif choice == '2':
-                print(char_gradient("\n[1] Парень | [2] Девушка"))
-                g_choice = await asyncio.to_thread(gradient_input, "Выберите пол: ")
+                print(char_gradient("\n[1] Парень | [2] Девушка | [стоп] Назад"))
+                g_choice = await asyncio.to_thread(gradient_input, "Пол >> ")
+                if g_choice.lower().strip() == 'стоп': continue
                 gender = "девушка" if g_choice == "2" else "парень"
-                
-                fake_data = generate_fake_info(gender)
-                print(char_gradient(fake_data))
-                
-                await asyncio.to_thread(gradient_input, "\nНажмите Enter, чтобы вернуться в меню...")
+                print(char_gradient(generate_fake_info(gender)))
+                await asyncio.to_thread(gradient_input, "\nНапишите 'стоп' или нажмите Enter для меню: ")
 
-            elif choice == '3':
-                print(char_gradient("[!] Выход из программы..."))
+            elif choice == '3' or choice.lower().strip() == 'выход':
                 break
-            else:
-                print(char_gradient("[!] Неверный выбор. Попробуйте еще раз."))
-
     finally:
         await client.disconnect()
 
@@ -305,6 +258,6 @@ if __name__ == '__main__':
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(char_gradient("\n[!] Программа закрыта."))
+        print(char_gradient("\n[!] Закрыто."))
     except Exception as e:
-        print(char_gradient(f"[КРИТИЧЕСКАЯ ОШИБКА] {e}"))
+        print(char_gradient(f"\n[КРИТИЧЕСКАЯ ОШИБКА] {e}"))
