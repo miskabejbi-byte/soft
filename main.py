@@ -18,8 +18,8 @@ from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError, FloodWaitError, RPCError
 
 # --- НАСТРОЙКИ ОБНОВЛЕНИЯ ---
-CURRENT_VERSION = "1.6.0"
-# Ссылка на файл с версией (только цифры, например 1.5.1)
+CURRENT_VERSION = "1.5.0"
+# Ссылка на файл с версией (там должна быть только цифра, например 1.6.0)
 VERSION_URL = "https://raw.githubusercontent.com/miskabejbu-byte/soft/main/version.txt"
 # Ссылка на сам файл скрипта (.py) для скачивания
 SCRIPT_URL = "https://raw.githubusercontent.com/miskabejbu-byte/soft/main/main.py"
@@ -106,26 +106,25 @@ def power_update():
         print(char_gradient("[!] Для автообновления нужно: pip install requests"))
         return
 
-    print(char_gradient("[*] Проверка обновлений..."))
+    print(char_gradient(f"[*] Проверка обновлений... (Текущая: {CURRENT_VERSION})"))
     try:
         headers = {'User-Agent': 'Mozilla/5.0', 'Cache-Control': 'no-cache'}
-        # Проверяем версию
         r = requests.get(VERSION_URL, headers=headers, verify=False, timeout=10)
+        
         if r.status_code == 200:
             remote_version = r.text.strip()
+            print(char_gradient(f"[*] Версия на GitHub: {remote_version}"))
+            
             if remote_version != CURRENT_VERSION:
-                print(char_gradient(f"[!] Найдена новая версия: {remote_version}. Обновляюсь..."))
+                print(char_gradient(f"[!] Найдена новая версия! Обновляюсь..."))
                 
-                # Скачиваем новый код
                 new_code = requests.get(SCRIPT_URL, headers=headers, verify=False, timeout=15)
                 if new_code.status_code == 200:
-                    # Перезаписываем текущий файл
                     file_path = os.path.abspath(sys.argv[0])
                     with open(file_path, 'wb') as f:
                         f.write(new_code.content)
                     
-                    print(char_gradient("[+] Обновление завершено! Перезапуск..."))
-                    # Перезапуск скрипта
+                    print(char_gradient("[+] Файл обновлен. Перезапуск..."))
                     if os.name == 'nt':
                         subprocess.Popen([sys.executable, file_path])
                     else:
@@ -133,8 +132,10 @@ def power_update():
                     sys.exit()
             else:
                 print(char_gradient("[+] У вас последняя версия.\n"))
+        else:
+            print(char_gradient(f"[!] Ошибка сервера: {r.status_code}\n"))
     except Exception as e:
-        print(char_gradient(f"[!] Ошибка обновления: {str(e)[:30]}. Пропускаю...\n"))
+        print(char_gradient(f"[!] Ошибка связи с GitHub. Пропускаю...\n"))
 
 def resolve_id(target):
     target = str(target).strip()
@@ -159,13 +160,8 @@ async def send_words_task(client, target_group, text, delay):
 def generate_fake_info(gender):
     countries = ["Россия", "Украина"]
     country = random.choice(countries)
-    if country == "Россия":
-        cities = ["Москва", "Санкт-Петербург", "Казань", "Нижний Новгород"]
-        names = ["Александр", "Дмитрий"] if gender == "парень" else ["Анастасия", "Мария"]
-    else:
-        cities = ["Київ", "Харків", "Одеса", "Дніпро"]
-        names = ["Олександр", "Дмитро"] if gender == "парень" else ["Анастасія", "Марія"]
-    
+    cities = ["Москва", "Київ", "Одеса", "Казань"]
+    names = ["Александр", "Мария", "Дмитрий", "Анна"]
     return f"\n--- ДАННЫЕ ---\nФИО: {random.choice(names)}\nГород: {random.choice(cities)}\nВозраст: {random.randint(11, 17)}\n-------------"
 
 CONFIG_FILE = 'config.json'
@@ -185,9 +181,8 @@ async def main():
     config = load_config()
     clear_screen()
     print(char_gradient(BANNER_RAW))
-    print(char_gradient(f"юз: miskabejbu | Роль: Creator | Версия: {CURRENT_VERSION}\n"))
+    print(char_gradient(f"юз: hanet0_0 | Роль: Creator | Версия: {CURRENT_VERSION}\n"))
 
-    # МОЩНОЕ ОБНОВЛЕНИЕ ПРИ ЗАПУСКЕ
     power_update()
 
     if 'api_id' not in config:
@@ -219,7 +214,7 @@ async def main():
         while True:
             clear_screen()
             print(char_gradient(BANNER_RAW))
-            print(char_gradient(f"юз: miskabejbu | Роль: Creator\n"))
+            print(char_gradient(f"юз: hanet0_0 | Роль: Creator\n"))
             print(char_gradient("[1] Троллинг\n[2] Создать лож инфу\n[3] Выход"))
             choice = await asyncio.to_thread(gradient_input, "Выберите действие: ")
             
