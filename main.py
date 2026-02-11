@@ -18,11 +18,12 @@ from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError, FloodWaitError, RPCError
 
 # --- НАСТРОЙКИ ОБНОВЛЕНИЯ ---
+# Текущая версия (в локальном файле). На GitHub должна быть выше (например, 1.6.0), чтобы сработало обновление.
 CURRENT_VERSION = "1.5.0"
-# Ссылка на файл с версией (там должна быть только цифра, например 1.6.0)
-VERSION_URL = "https://raw.githubusercontent.com/miskabejbu-byte/soft/main/version.txt"
-# Ссылка на сам файл скрипта (.py) для скачивания
-SCRIPT_URL = "https://raw.githubusercontent.com/miskabejbu-byte/soft/main/main.py"
+# Прямая ссылка на файл с версией
+VERSION_URL = "https://raw.githubusercontent.com/miskabejbu-byte/soft/refs/heads/main/version.txt"
+# Прямая ссылка на сам файл скрипта для скачивания
+SCRIPT_URL = "https://raw.githubusercontent.com/miskabejbu-byte/soft/refs/heads/main/main.py"
 
 # Настройка для Windows
 try:
@@ -48,6 +49,7 @@ BANNER_RAW = r"""
 """
 
 def char_gradient(text, start_count=0):
+    """Окрашивает текст: 1 буква синяя, 2 голубая..."""
     result = ""
     count = start_count
     for char in text:
@@ -66,6 +68,7 @@ def clear_screen():
         os.system('clear')
 
 def gradient_input(prompt):
+    """Ввод с градиентом."""
     if not WINDOWS:
         sys.stdout.write(char_gradient(prompt))
         sys.stdout.flush()
