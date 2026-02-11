@@ -1,8 +1,1 @@
-# Твоя текущая версия (в самом файле)
-CURRENT_VERSION = "1.6.0" 
-
-# Ссылка на файл, где лежит цифра новой версии
-VERSION_URL = "https://raw.githubusercontent.com/miskabejbu-byte/soft/main/version.txt"
-
-# Ссылка на сам файл .py, который софт скачает вместо старого
-SCRIPT_URL = "https://raw.githubusercontent.com/miskabejbu-byte/soft/main/main.py"
+1.6.0
