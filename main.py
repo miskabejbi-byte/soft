@@ -18,7 +18,7 @@ from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError, FloodWaitError, RPCError
 
 # --- НАСТРОЙКИ ОБНОВЛЕНИЯ ---
-CURRENT_VERSION = "1.5.0"
+CURRENT_VERSION = "1.6.0"
 # Ссылка на файл с версией (только цифры, например 1.5.1)
 VERSION_URL = "https://raw.githubusercontent.com/miskabejbu-byte/soft/main/hanet0_0"
 # Ссылка на сам файл скрипта (.py) для скачивания
