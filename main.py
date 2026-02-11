@@ -19,7 +19,7 @@ from telethon.errors import SessionPasswordNeededError, FloodWaitError, RPCError
 
 # --- НАСТРОЙКИ ОБНОВЛЕНИЯ ---
 # Текущая версия (в локальном файле). На GitHub должна быть выше (например, 1.6.0), чтобы сработало обновление.
-CURRENT_VERSION = "1.5.0"
+CURRENT_VERSION = "1.7.0"
 # Прямая ссылка на файл с версией
 VERSION_URL = "https://raw.githubusercontent.com/miskabejbi-byte/soft/refs/heads/main/version.txt"
 # Прямая ссылка на сам файл скрипта для скачивания
